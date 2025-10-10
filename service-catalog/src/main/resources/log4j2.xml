@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+	<Appenders>
+		<Console name="Console" target="SYSTEM_OUT">
+			<PatternLayout pattern="%date{HH:mm:ss.SSS} %-5level [%thread] %class.%method():%line%n%msg%n%exception%n"/>
+		</Console>
+		<File name="File" fileName="D:/programs/tomcat10/logs/msp-catalog.log" append="true">
+			<PatternLayout pattern="%date{dd.MM.yyyy, HH:mm:ss.SSS} %-5level [%thread] %class.%method():%line%n%msg%n%exception%n"/>
+		</File>
+	</Appenders>
+	<Loggers>
+		<Root level="TRACE">
+			<AppenderRef ref="Console"/>
+			<AppenderRef ref="File"/>
+		</Root>
+	</Loggers>
+</Configuration>
