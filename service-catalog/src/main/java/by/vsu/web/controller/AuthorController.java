@@ -1,11 +1,10 @@
-package by.vsu.web;
+package by.vsu.web.controller;
 
 import by.vsu.domain.Author;
 import by.vsu.service.AuthorService;
 import by.vsu.service.ServiceException;
 import by.vsu.service.ServiceFactory;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import by.vsu.web.HttpHelper;
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -32,42 +31,21 @@ public class AuthorController extends HttpServlet {
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-		ObjectMapper mapper = new ObjectMapper().registerModule(new Jdk8Module());
 		try {
 			String idParam = req.getParameter("id");
 			if(idParam != null) {
 				try {
 					Author author = authorService.findById(Long.parseLong(idParam)).orElseThrow(IllegalArgumentException::new);
-					resp.setStatus(HttpServletResponse.SC_OK);
-					resp.setContentType("application/json");
-					mapper.writeValue(resp.getOutputStream(), author);
+					HttpHelper.sendObject(resp, HttpServletResponse.SC_OK, author);
 				} catch(IllegalArgumentException e) {
-					resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-					resp.setContentType("application/json");
-					mapper.writeValue(resp.getOutputStream(), new Error("Nothing found"));
+					HttpHelper.sendError(resp, HttpServletResponse.SC_NOT_FOUND, new HttpHelper.Error("Nothing found"));
 				}
 			} else {
 				List<Author> authors = authorService.findAll();
-				resp.setStatus(HttpServletResponse.SC_OK);
-				resp.setContentType("application/json");
-				mapper.writeValue(resp.getOutputStream(), authors);
+				HttpHelper.sendObject(resp, HttpServletResponse.SC_OK, authors);
 			}
 		} catch(ServiceException e) {
-			resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-			resp.setContentType("application/json");
-			mapper.writeValue(resp.getOutputStream(), new Error(e.getMessage()));
-		}
-	}
-
-	public static class Error {
-		private final String message;
-
-		public Error(String message) {
-			this.message = message;
-		}
-
-		public String getMessage() {
-			return message;
+			HttpHelper.sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, new HttpHelper.Error(e.getMessage()));
 		}
 	}
 }
