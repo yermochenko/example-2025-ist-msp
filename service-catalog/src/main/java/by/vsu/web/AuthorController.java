@@ -31,7 +31,7 @@ public class AuthorController extends HttpServlet {
 	}
 
 	@Override
-	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		ObjectMapper mapper = new ObjectMapper().registerModule(new Jdk8Module());
 		try {
 			String idParam = req.getParameter("id");
@@ -53,7 +53,9 @@ public class AuthorController extends HttpServlet {
 				mapper.writeValue(resp.getOutputStream(), authors);
 			}
 		} catch(ServiceException e) {
-			throw new ServletException(e);
+			resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			resp.setContentType("application/json");
+			mapper.writeValue(resp.getOutputStream(), new Error(e.getMessage()));
 		}
 	}
 
