@@ -5,6 +5,7 @@ import by.vsu.service.AuthorService;
 import by.vsu.service.ServiceException;
 import by.vsu.service.ServiceFactory;
 import by.vsu.web.HttpHelper;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -13,6 +14,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 @WebServlet("/api/author")
@@ -46,6 +48,75 @@ public class AuthorController extends HttpServlet {
 			}
 		} catch(ServiceException e) {
 			HttpHelper.sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, new HttpHelper.Error(e.getMessage()));
+		}
+	}
+
+	@Override
+	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+		save(req, resp, true);
+	}
+
+	@Override
+	protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+		save(req, resp, false);
+	}
+
+	private void save(HttpServletRequest req, HttpServletResponse resp, boolean create) throws IOException {
+		try {
+			Author author = HttpHelper.parse(req, Author.class);
+			HttpHelper.EntityError error = validate(author);
+			if(error == null) {
+				try {
+					if(create) {
+						author.setId(null);
+						authorService.save(author);
+						HttpHelper.sendObject(resp, HttpServletResponse.SC_CREATED, author);
+					} else {
+						if(author.getId() != null) {
+							if(authorService.save(author)) {
+								resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
+							} else {
+								HttpHelper.sendError(resp, HttpServletResponse.SC_NOT_FOUND, new HttpHelper.Error("Nothing found"));
+							}
+						} else {
+							HttpHelper.sendError(resp, HttpServletResponse.SC_BAD_REQUEST, new HttpHelper.EntityError("Invalid JSON", List.of(new HttpHelper.EntityError.PropertyError("id", "property is required"))));
+						}
+					}
+				} catch(ServiceException e) {
+					HttpHelper.sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, new HttpHelper.Error(e.getMessage()));
+				}
+			} else {
+				HttpHelper.sendError(resp, HttpServletResponse.SC_BAD_REQUEST, error);
+			}
+		} catch(JsonProcessingException e) {
+			HttpHelper.sendError(resp, HttpServletResponse.SC_BAD_REQUEST, new HttpHelper.Error(e.getMessage()));
+		}
+	}
+
+	private static HttpHelper.EntityError validate(Author author) {
+		List<HttpHelper.EntityError.PropertyError> errors = new ArrayList<>();
+		if(author.getFirstName() == null) {
+			errors.add(new HttpHelper.EntityError.PropertyError("firstName", "property is required"));
+		} else if(author.getFirstName().isBlank()) {
+			errors.add(new HttpHelper.EntityError.PropertyError("firstName", "property cannot be blank"));
+		}
+		if(author.getLastName() == null) {
+			errors.add(new HttpHelper.EntityError.PropertyError("lastName", "property is required"));
+		} else if(author.getLastName().isBlank()) {
+			errors.add(new HttpHelper.EntityError.PropertyError("lastName", "property cannot be blank"));
+		}
+		if(author.getMiddleName().isPresent() && author.getMiddleName().get().isBlank()) {
+			errors.add(new HttpHelper.EntityError.PropertyError("middleName", "property cannot be blank"));
+		}
+		if(author.getBirthYear() == null) {
+			errors.add(new HttpHelper.EntityError.PropertyError("birthYear", "property is required"));
+		} else if(author.getDeathYear().isPresent() && author.getBirthYear() > author.getDeathYear().get()) {
+			errors.add(new HttpHelper.EntityError.PropertyError("deathYear", "property should be greater than property birthYear"));
+		}
+		if(!errors.isEmpty()) {
+			return new HttpHelper.EntityError("Invalid JSON for author", errors);
+		} else {
+			return null;
 		}
 	}
 }
