@@ -49,6 +49,25 @@ public class AuthorController extends HttpServlet {
 		save(req, resp, false);
 	}
 
+	@Override
+	protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+		IocContainer ioc = new IocContainer();
+		AuthorService authorService = ioc.get(AuthorService.class);
+		String idParam = req.getParameter("id");
+		if(idParam != null) {
+			try {
+				Author author = authorService.delete(Long.parseLong(idParam)).orElseThrow(IllegalArgumentException::new);
+				HttpHelper.sendObject(resp, HttpServletResponse.SC_OK, author);
+			} catch(IllegalArgumentException e) {
+				HttpHelper.sendError(resp, HttpServletResponse.SC_NOT_FOUND, new HttpHelper.Error("Nothing found"));
+			} catch(ServiceException e) {
+				HttpHelper.sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, new HttpHelper.Error(e.getMessage()));
+			}
+		} else {
+			HttpHelper.sendError(resp, HttpServletResponse.SC_BAD_REQUEST, new HttpHelper.Error("id parameter is required"));
+		}
+	}
+
 	private void save(HttpServletRequest req, HttpServletResponse resp, boolean create) throws IOException {
 		try {
 			Author author = HttpHelper.parse(req, Author.class);
