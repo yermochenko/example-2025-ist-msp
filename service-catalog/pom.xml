@@ -13,6 +13,7 @@
 	<packaging>war</packaging>
 
 	<properties>
+		<postgresql.version>42.7.8</postgresql.version>
 		<servlet.version>6.1.0</servlet.version>
 		<jackson.version>2.19.2</jackson.version>
 		<log4j.version>2.25.1</log4j.version>
@@ -23,6 +24,12 @@
 			<groupId>by.vsu</groupId>
 			<artifactId>lib-domain</artifactId>
 			<version>1.0-SNAPSHOT</version>
+		</dependency>
+		<!-- https://jdbc.postgresql.org/download -->
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<version>${postgresql.version}</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/jakarta.servlet/jakarta.servlet-api -->
 		<dependency>
@@ -62,4 +69,14 @@
 			<version>${log4j.version}</version>
 		</dependency>
 	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-war-plugin</artifactId>
+				<version>3.3.2</version>
+			</plugin>
+		</plugins>
+	</build>
 </project>

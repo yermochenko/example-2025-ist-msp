@@ -3,13 +3,14 @@ package by.vsu.web.validator;
 import by.vsu.domain.Author;
 import by.vsu.web.HttpHelper;
 import by.vsu.web.Validator;
+import by.vsu.web.exception.BadRequestException;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class AuthorValidator implements Validator<Author> {
 	@Override
-	public HttpHelper.EntityError validate(Author author) {
+	public void validate(Author author) throws BadRequestException {
 		List<HttpHelper.EntityError.PropertyError> errors = new ArrayList<>();
 		if(author.getFirstName() == null) {
 			errors.add(new HttpHelper.EntityError.PropertyError("firstName", "property is required"));
@@ -30,9 +31,7 @@ public class AuthorValidator implements Validator<Author> {
 			errors.add(new HttpHelper.EntityError.PropertyError("deathYear", "property should be greater than property birthYear"));
 		}
 		if(!errors.isEmpty()) {
-			return new HttpHelper.EntityError("Invalid JSON for author", errors);
-		} else {
-			return null;
+			throw new BadRequestException(new HttpHelper.EntityError("Invalid JSON for author", errors));
 		}
 	}
 }

@@ -17,7 +17,10 @@ public class Settings {
 	}
 
 	public enum Key {
-		SERVICE_FACTORY("service.factory");
+		JDBC_DRIVER("jdbc.driver"),
+		JDBC_URL("jdbc.url"),
+		JDBC_USERNAME("jdbc.username"),
+		JDBC_PASSWORD("jdbc.password");
 
 		private final String name;
 		Key(String name) {

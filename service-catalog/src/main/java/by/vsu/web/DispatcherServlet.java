@@ -3,6 +3,7 @@ package by.vsu.web;
 import by.vsu.config.util.ControllerContainer;
 import by.vsu.config.util.IocContainer;
 import by.vsu.config.util.ValidatorContainer;
+import by.vsu.config.util.exception.IocException;
 import by.vsu.domain.Entity;
 import by.vsu.web.exception.BadRequestException;
 import by.vsu.web.exception.ControllerException;
@@ -80,8 +81,7 @@ public class DispatcherServlet extends HttpServlet {
 	}
 
 	private static void process(HttpServletRequest req, HttpServletResponse resp, RequestHandler handler) throws IOException {
-		try {
-			IocContainer ioc = new IocContainer();
+		try(IocContainer ioc = new IocContainer()) {
 			String uri = req.getRequestURI().substring(req.getContextPath().length() + URI_PREFIX.length());
 			Class<Controller<Entity>> controllerClass = ControllerContainer.get(uri).orElseThrow(NotFoundException::new);
 			Controller<Entity> controller = ioc.get(controllerClass);
@@ -90,7 +90,7 @@ public class DispatcherServlet extends HttpServlet {
 			HttpHelper.sendError(resp, HttpServletResponse.SC_BAD_REQUEST, e.getError());
 		} catch(NotFoundException e) {
 			HttpHelper.sendError(resp, HttpServletResponse.SC_NOT_FOUND, new HttpHelper.Error("Nothing found"));
-		} catch(ControllerException e) {
+		} catch(ControllerException | IocException e) {
 			HttpHelper.sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, new HttpHelper.Error(e.getMessage()));
 		}
 	}
