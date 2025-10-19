@@ -33,7 +33,8 @@ public class ApplicationInitializer implements ServletContextListener {
 			IocContainer.init(
 					iocContainerRegistry.getImplementationsSupplier(),
 					iocContainerRegistry.getDependenciesSupplier(),
-					iocContainerRegistry.getFactoriesSupplier()
+					iocContainerRegistry.getFactoriesSupplier(),
+					iocContainerRegistry.getDecoratorsSupplier()
 			);
 			// Initialization of controllers
 			ControllerContainer.Registry controllerContainerRegistry = new ControllerContainer.Registry();

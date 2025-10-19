@@ -8,6 +8,7 @@ import by.vsu.repository.jdbc.ConnectionFactory;
 import by.vsu.repository.jdbc.TransactionManagerImpl;
 import by.vsu.service.AuthorService;
 import by.vsu.service.main.AuthorServiceImpl;
+import by.vsu.service.main.TransactionDecorator;
 import by.vsu.web.controller.AuthorController;
 
 import java.sql.Connection;
@@ -20,5 +21,7 @@ public class IocMainConfiguration {
 		registry.registerClass(AuthorRepository.class, AuthorRepositoryImpl.class, List.of(Connection.class));
 		registry.registerClass(AuthorService.class, AuthorServiceImpl.class, List.of(AuthorRepository.class, TransactionManager.class));
 		registry.registerClass(AuthorController.class, AuthorController.class, List.of(AuthorService.class));
+		TransactionDecorator decorator = new TransactionDecorator();
+		registry.registerDecorator(decorator, List.of(AuthorServiceImpl.class));
 	}
 }

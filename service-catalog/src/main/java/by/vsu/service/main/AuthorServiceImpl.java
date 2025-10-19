@@ -1,5 +1,6 @@
 package by.vsu.service.main;
 
+import by.vsu.config.util.Decorated;
 import by.vsu.domain.Author;
 import by.vsu.repository.AuthorRepository;
 import by.vsu.repository.RepositoryException;
@@ -9,6 +10,7 @@ import by.vsu.service.ServiceException;
 import java.util.List;
 import java.util.Optional;
 
+@Decorated
 public class AuthorServiceImpl extends BaseServiceImpl implements AuthorService {
 	private AuthorRepository authorRepository;
 
@@ -16,36 +18,30 @@ public class AuthorServiceImpl extends BaseServiceImpl implements AuthorService 
 		this.authorRepository = authorRepository;
 	}
 
+	@Transaction
 	@Override
 	public List<Author> findAll() throws ServiceException {
 		try {
-			getTransactionManager().startTransaction();
-			List<Author> authors = authorRepository.readAll();
-			getTransactionManager().commitTransaction();
-			return authors;
+			return authorRepository.readAll();
 		} catch(RepositoryException e) {
-			try { getTransactionManager().rollbackTransaction(); } catch(RepositoryException ignored) {}
 			throw new ServiceException(e);
 		}
 	}
 
+	@Transaction
 	@Override
 	public Optional<Author> findById(long id) throws ServiceException {
 		try {
-			getTransactionManager().startTransaction();
-			Optional<Author> author = authorRepository.read(id);
-			getTransactionManager().commitTransaction();
-			return author;
+			return authorRepository.read(id);
 		} catch(RepositoryException e) {
-			try { getTransactionManager().rollbackTransaction(); } catch(RepositoryException ignored) {}
 			throw new ServiceException(e);
 		}
 	}
 
+	@Transaction
 	@Override
 	public boolean save(Author author) throws ServiceException {
 		try {
-			getTransactionManager().startTransaction();
 			boolean result = true;
 			if(author.getId() == null) {
 				// create
@@ -60,26 +56,22 @@ public class AuthorServiceImpl extends BaseServiceImpl implements AuthorService 
 					result = false;
 				}
 			}
-			getTransactionManager().commitTransaction();
 			return result;
 		} catch(RepositoryException e) {
-			try { getTransactionManager().rollbackTransaction(); } catch(RepositoryException ignored) {}
 			throw new ServiceException(e);
 		}
 	}
 
+	@Transaction
 	@Override
 	public Optional<Author> delete(long id) throws ServiceException {
 		try {
-			getTransactionManager().startTransaction();
 			Optional<Author> author = authorRepository.read(id);
 			if(author.isPresent()) {
 				authorRepository.delete(id);
 			}
-			getTransactionManager().commitTransaction();
 			return author;
 		} catch(RepositoryException e) {
-			try { getTransactionManager().rollbackTransaction(); } catch(RepositoryException ignored) {}
 			throw new ServiceException(e);
 		}
 	}
